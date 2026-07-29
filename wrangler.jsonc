@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "hoshi-mi-cf",
-  "main": "src/index.ts",
+  "main": "src/index.tsx",
   "compatibility_date": "2026-07-29",
   "d1_databases": [
     {

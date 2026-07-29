@@ -55,7 +55,10 @@ ul.hoshi-list a:hover { background: #f0f0f0; }
   font-size: 0.9rem;
 }
 .hoshi-tabs a.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-canvas.hoshi-chart { width: 100%; max-height: 320px; }
+.hoshi-chart-wrap { position: relative; width: 100%; }
+.hoshi-chart-wrap-card { height: 220px; }
+.hoshi-chart-wrap-detail { height: 420px; }
+canvas.hoshi-chart { width: 100% !important; height: 100% !important; }
 `;
 
 const CLIENT_SCRIPT = `
@@ -78,6 +81,8 @@ function hoshiRenderChart(canvas) {
         },
         options: {
           animation: false,
+          responsive: true,
+          maintainAspectRatio: false,
           scales: { x: { type: 'time' }, y: { beginAtZero: false } },
           plugins: { legend: { display: false } },
         },

@@ -1,5 +1,6 @@
 {
   "name": "hoshi-mi-cf",
+  "type": "module",
   "scripts": {
     "dev": "wrangler dev",
     "test": "vitest run",

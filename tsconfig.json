@@ -9,7 +9,7 @@
     "types": [
       "@cloudflare/workers-types",
       "vitest/globals",
-      "@cloudflare/vitest-pool-workers"
+      "@cloudflare/vitest-pool-workers/types"
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"

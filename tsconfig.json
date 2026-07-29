@@ -6,7 +6,11 @@
     "strict": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
-    "types": ["@cloudflare/workers-types/2023-07-01", "vitest/globals", "@cloudflare/vitest-pool-workers"],
+    "types": [
+      "@cloudflare/workers-types",
+      "vitest/globals",
+      "@cloudflare/vitest-pool-workers"
+    ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
   }

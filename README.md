@@ -95,11 +95,14 @@ Requires Node.js (see `.node-version`) and a Cloudflare account.
 
 ```console
 $ npm install
+$ cp wrangler.jsonc.example wrangler.jsonc
 $ npx wrangler login
 $ npx wrangler d1 create hoshi-mi
 ```
 
-Paste the resulting `database_id` into `wrangler.jsonc`, then apply the schema locally:
+`wrangler.jsonc` is gitignored — it holds your D1 `database_id`, which is specific to your Cloudflare
+account, so it's kept out of the repo. Paste the resulting `database_id` from the previous command into
+`wrangler.jsonc`, then apply the schema locally:
 
 ```console
 $ npx wrangler d1 migrations apply hoshi-mi --local
@@ -126,9 +129,12 @@ $ npx wrangler secret put API_TOKEN
 $ npm run deploy
 ```
 
-CI (`.github/workflows/ci.yml`) runs lint and tests on every push. Deployment
-(`.github/workflows/deploy.yml`) is a manual `workflow_dispatch` that uses
-`cloudflare/wrangler-action` with a `CF_API_TOKEN` repository secret — it does not run automatically.
+CI (`.github/workflows/ci.yml`) runs lint and tests on every push; it copies `wrangler.jsonc.example` to
+`wrangler.jsonc` first, since the placeholder `database_id` is fine for local/test D1. Deployment
+(`.github/workflows/deploy.yml`) is a manual `workflow_dispatch` that does the same but substitutes the
+placeholder `database_id` with a `D1_DATABASE_ID` repository variable before deploying, using
+`cloudflare/wrangler-action` with a `CF_API_TOKEN` repository secret. Set both under the repo's
+Settings → Secrets and variables → Actions before running the workflow.
 
 ## Free tier notes
 

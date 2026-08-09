@@ -29,10 +29,15 @@ jobs:
       - name: Configure wrangler
         run: |
           cp wrangler.jsonc.example wrangler.jsonc
-          sed -i "s/00000000-0000-0000-0000-000000000000/${{ vars.D1_DATABASE_ID }}/" wrangler.jsonc
+          sed -i "s/00000000-0000-0000-0000-000000000000/${{ secrets.D1_DATABASE_ID }}/" wrangler.jsonc
 
       - name: Deploy
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
+          preCommands: npx wrangler d1 migrations apply hoshi-mi --remote
+          secrets: |
+            API_TOKEN
           command: deploy --minify
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}

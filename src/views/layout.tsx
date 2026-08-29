@@ -55,6 +55,7 @@ ul.hoshi-list a:hover { background: #f0f0f0; }
   font-size: 0.9rem;
 }
 .hoshi-tabs a.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.hoshi-chart-range { color: #666; font-size: 0.8rem; margin: 0 0 0.4rem; }
 .hoshi-chart-wrap { position: relative; width: 100%; }
 .hoshi-chart-wrap-card { height: 220px; }
 .hoshi-chart-wrap-detail { height: 420px; }
@@ -62,10 +63,21 @@ canvas.hoshi-chart { width: 100% !important; height: 100% !important; }
 `;
 
 const CLIENT_SCRIPT = `
+function hoshiFormatRange(range) {
+  var opts = { dateStyle: 'medium', timeStyle: 'short' };
+  var from = new Date(range.from * 1000).toLocaleString(undefined, opts);
+  var to = new Date(range.to * 1000).toLocaleString(undefined, opts);
+  return from + ' – ' + to;
+}
 function hoshiRenderChart(canvas) {
   fetch(canvas.dataset.url)
     .then(function (res) { return res.json(); })
     .then(function (json) {
+      var block = canvas.closest('.hoshi-chart-block');
+      var rangeEl = block && block.querySelector('.hoshi-chart-range');
+      if (rangeEl && json.range) {
+        rangeEl.textContent = hoshiFormatRange(json.range);
+      }
       new Chart(canvas.getContext('2d'), {
         type: 'line',
         data: {

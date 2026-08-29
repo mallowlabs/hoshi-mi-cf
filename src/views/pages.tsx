@@ -87,8 +87,11 @@ export const GraphListPage: FC<{
                 {graph.graph}
               </a>
             </h3>
-            <div class="hoshi-chart-wrap hoshi-chart-wrap-card">
-              <canvas class="hoshi-chart" data-url={dataUrl} />
+            <div class="hoshi-chart-block">
+              <p class="hoshi-chart-range" />
+              <div class="hoshi-chart-wrap hoshi-chart-wrap-card">
+                <canvas class="hoshi-chart" data-url={dataUrl} />
+              </div>
             </div>
           </div>
         );
@@ -130,8 +133,11 @@ export const GraphDetailPage: FC<{
           </a>
         ))}
       </div>
-      <div class="hoshi-chart-wrap hoshi-chart-wrap-detail">
-        <canvas class="hoshi-chart" data-url={dataUrl} />
+      <div class="hoshi-chart-block">
+        <p class="hoshi-chart-range" />
+        <div class="hoshi-chart-wrap hoshi-chart-wrap-detail">
+          <canvas class="hoshi-chart" data-url={dataUrl} />
+        </div>
       </div>
     </div>
   );

@@ -51,6 +51,8 @@ describe('GET /data/:service/:section/:graph', () => {
     });
     expect(json.points).toHaveLength(1);
     expect(json.points[0].value).toBe(10);
+    expect(json.range.to).toBeGreaterThan(json.range.from);
+    expect(json.range.to - json.range.from).toBe(24 * 60 * 60);
   });
 
   it('falls back to "d" for an invalid t value', async () => {

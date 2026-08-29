@@ -38,6 +38,7 @@ data.get('/:service/:section/:graph', async (c) => {
       color: graphRow.color,
     },
     t,
+    range: { from: sinceTs, to: now },
     points,
   });
   response.headers.set('Cache-Control', `public, max-age=${cacheSeconds}`);

@@ -41,39 +41,6 @@ export const SectionListPage: FC<{ service: string; sections: string[] }> = ({
   </div>
 );
 
-export const GraphListPage: FC<{
-  service: string;
-  section: string;
-  graphs: GraphRow[];
-}> = ({ service, section, graphs }) => (
-  <div>
-    <p class="hoshi-breadcrumb">
-      <a href="/">Services</a> /{' '}
-      <a href={`/${encodeURIComponent(service)}`}>{service}</a> / {section}
-    </p>
-    <h1>
-      {service} / {section}
-    </h1>
-    {graphs.map((graph) => {
-      const dataUrl = `/data/${encodeURIComponent(service)}/${encodeURIComponent(section)}/${encodeURIComponent(graph.graph)}?t=d`;
-      return (
-        <div class="hoshi-graph-card">
-          <h3>
-            <a
-              href={`/${encodeURIComponent(service)}/${encodeURIComponent(section)}/${encodeURIComponent(graph.graph)}`}
-            >
-              {graph.graph}
-            </a>
-          </h3>
-          <div class="hoshi-chart-wrap hoshi-chart-wrap-card">
-            <canvas class="hoshi-chart" data-url={dataUrl} />
-          </div>
-        </div>
-      );
-    })}
-  </div>
-);
-
 const TIME_RANGES: readonly { key: string; label: string }[] = [
   { key: 'h', label: 'Hour' },
   { key: 'd', label: 'Day' },
@@ -81,6 +48,54 @@ const TIME_RANGES: readonly { key: string; label: string }[] = [
   { key: 'm', label: 'Month' },
   { key: 'y', label: 'Year' },
 ];
+
+export const GraphListPage: FC<{
+  service: string;
+  section: string;
+  graphs: GraphRow[];
+  t: string;
+}> = ({ service, section, graphs, t }) => {
+  const sectionPath = `/${encodeURIComponent(service)}/${encodeURIComponent(section)}`;
+
+  return (
+    <div>
+      <p class="hoshi-breadcrumb">
+        <a href="/">Services</a> /{' '}
+        <a href={`/${encodeURIComponent(service)}`}>{service}</a> / {section}
+      </p>
+      <h1>
+        {service} / {section}
+      </h1>
+      <div class="hoshi-tabs">
+        {TIME_RANGES.map((range) => (
+          <a
+            href={`${sectionPath}?t=${range.key}`}
+            class={range.key === t ? 'active' : undefined}
+          >
+            {range.label}
+          </a>
+        ))}
+      </div>
+      {graphs.map((graph) => {
+        const dataUrl = `/data/${encodeURIComponent(service)}/${encodeURIComponent(section)}/${encodeURIComponent(graph.graph)}?t=${t}`;
+        return (
+          <div class="hoshi-graph-card">
+            <h3>
+              <a
+                href={`/${encodeURIComponent(service)}/${encodeURIComponent(section)}/${encodeURIComponent(graph.graph)}`}
+              >
+                {graph.graph}
+              </a>
+            </h3>
+            <div class="hoshi-chart-wrap hoshi-chart-wrap-card">
+              <canvas class="hoshi-chart" data-url={dataUrl} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 export const GraphDetailPage: FC<{
   service: string;

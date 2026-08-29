@@ -41,9 +41,15 @@ app.get('/:service/:section', async (c) => {
   const { service, section } = c.req.param();
   const graphs = await listGraphs(c.env.DB, service, section);
   if (graphs.length === 0) return c.notFound();
+  const t = resolveTimeRangeKey(c.req.query('t'));
   return c.html(
     <Layout title={`${service}/${section}`}>
-      <GraphListPage service={service} section={section} graphs={graphs} />
+      <GraphListPage
+        service={service}
+        section={section}
+        graphs={graphs}
+        t={t}
+      />
     </Layout>,
   );
 });

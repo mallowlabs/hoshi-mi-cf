@@ -67,4 +67,26 @@ describe('GET /data/:service/:section/:graph', () => {
     const res = await request('/data/svc/web/series-hour?t=h');
     expect(res.headers.get('Cache-Control')).toBe('public, max-age=60');
   });
+
+  it('uses a custom from/to range when both are given', async () => {
+    await authedPost('/api/svc/web/series-custom', { number: '1' });
+    const now = Math.floor(Date.now() / 1000);
+    const from = now - 7200;
+    const to = now - 3600;
+    const res = await request(
+      `/data/svc/web/series-custom?from=${from}&to=${to}`,
+    );
+    const json = await res.json();
+    expect(json.t).toBeNull();
+    expect(json.range).toEqual({ from, to });
+  });
+
+  it('falls back to the preset range when from/to are invalid', async () => {
+    await authedPost('/api/svc/web/series-bad-range', { number: '1' });
+    const res = await request(
+      '/data/svc/web/series-bad-range?t=h&from=200&to=100',
+    );
+    const json = await res.json();
+    expect(json.t).toBe('h');
+  });
 });

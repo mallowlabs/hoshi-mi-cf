@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { getAggregateConfig, resolveTimeRangeKey } from '../aggregate';
+import { resolveRange } from '../aggregate';
 import { fetchSeries, getGraph } from '../repository';
 import type { Bindings } from '../types';
 
@@ -18,16 +18,22 @@ data.get('/:service/:section/:graph', async (c) => {
     return c.json({ error: 1, messages: { graph: 'not found' } }, 404);
   }
 
-  const t = resolveTimeRangeKey(c.req.query('t'));
-  const { rangeSeconds, bucketSeconds, cacheSeconds } = getAggregateConfig(t);
   const now = Math.floor(Date.now() / 1000);
-  const sinceTs = now - rangeSeconds;
+  const range = resolveRange(
+    {
+      t: c.req.query('t'),
+      from: c.req.query('from'),
+      to: c.req.query('to'),
+    },
+    now,
+  );
 
   const points = await fetchSeries(
     c.env.DB,
     graphRow.id,
-    bucketSeconds,
-    sinceTs,
+    range.bucketSeconds,
+    range.sinceTs,
+    range.untilTs,
   );
 
   const response = c.json({
@@ -37,11 +43,14 @@ data.get('/:service/:section/:graph', async (c) => {
       graph: graphRow.graph,
       color: graphRow.color,
     },
-    t,
-    range: { from: sinceTs, to: now },
+    t: range.mode === 'preset' ? range.t : null,
+    range: { from: range.sinceTs, to: range.untilTs },
     points,
   });
-  response.headers.set('Cache-Control', `public, max-age=${cacheSeconds}`);
+  response.headers.set(
+    'Cache-Control',
+    `public, max-age=${range.cacheSeconds}`,
+  );
 
   c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
 

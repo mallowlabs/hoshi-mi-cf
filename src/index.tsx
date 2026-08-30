@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
-import { resolveTimeRangeKey } from './aggregate';
+import { parseCustomRange, resolveTimeRangeKey } from './aggregate';
 import { getGraph, listGraphs, listSections, listServices } from './repository';
 import api from './routes/api';
 import data from './routes/data';
-import type { Bindings } from './types';
+import type { Bindings, PageRange } from './types';
 import { Layout } from './views/layout';
 import {
   GraphDetailPage,
@@ -11,6 +11,15 @@ import {
   SectionListPage,
   ServiceListPage,
 } from './views/pages';
+
+function resolvePageRange(c: {
+  req: { query: (key: string) => string | undefined };
+}): PageRange {
+  const custom = parseCustomRange(c.req.query('from'), c.req.query('to'));
+  return custom
+    ? { mode: 'custom', from: custom.from, to: custom.to }
+    : { mode: 'preset', t: resolveTimeRangeKey(c.req.query('t')) };
+}
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -41,14 +50,13 @@ app.get('/:service/:section', async (c) => {
   const { service, section } = c.req.param();
   const graphs = await listGraphs(c.env.DB, service, section);
   if (graphs.length === 0) return c.notFound();
-  const t = resolveTimeRangeKey(c.req.query('t'));
   return c.html(
     <Layout title={`${service}/${section}`}>
       <GraphListPage
         service={service}
         section={section}
         graphs={graphs}
-        t={t}
+        range={resolvePageRange(c)}
       />
     </Layout>,
   );
@@ -58,14 +66,13 @@ app.get('/:service/:section/:graph', async (c) => {
   const { service, section, graph } = c.req.param();
   const graphRow = await getGraph(c.env.DB, service, section, graph);
   if (!graphRow) return c.notFound();
-  const t = resolveTimeRangeKey(c.req.query('t'));
   return c.html(
     <Layout title={graph}>
       <GraphDetailPage
         service={service}
         section={section}
         graph={graphRow}
-        t={t}
+        range={resolvePageRange(c)}
       />
     </Layout>,
   );

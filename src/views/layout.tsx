@@ -55,7 +55,22 @@ ul.hoshi-list a:hover { background: #f0f0f0; }
   font-size: 0.9rem;
 }
 .hoshi-tabs a.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.hoshi-chart-range { color: #666; font-size: 0.8rem; margin: 0 0 0.4rem; }
+.hoshi-range-form { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.hoshi-range-form input[type="datetime-local"] {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+.hoshi-range-form button {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
 .hoshi-chart-wrap { position: relative; width: 100%; }
 .hoshi-chart-wrap-card { height: 220px; }
 .hoshi-chart-wrap-detail { height: 420px; }
@@ -63,21 +78,25 @@ canvas.hoshi-chart { width: 100% !important; height: 100% !important; }
 `;
 
 const CLIENT_SCRIPT = `
-function hoshiFormatRange(range) {
-  var opts = { dateStyle: 'medium', timeStyle: 'short' };
-  var from = new Date(range.from * 1000).toLocaleString(undefined, opts);
-  var to = new Date(range.to * 1000).toLocaleString(undefined, opts);
-  return from + ' – ' + to;
+function hoshiToLocalInputValue(ts) {
+  var d = new Date(ts * 1000);
+  function pad(n) { return String(n).padStart(2, '0'); }
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+    'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function hoshiPrefillRangeForm(range) {
+  var form = document.querySelector('.hoshi-range-form');
+  if (!form || !range) return;
+  var fromInput = form.querySelector('[name="from"]');
+  var toInput = form.querySelector('[name="to"]');
+  if (fromInput && !fromInput.value) fromInput.value = hoshiToLocalInputValue(range.from);
+  if (toInput && !toInput.value) toInput.value = hoshiToLocalInputValue(range.to);
 }
 function hoshiRenderChart(canvas) {
   fetch(canvas.dataset.url)
     .then(function (res) { return res.json(); })
     .then(function (json) {
-      var block = canvas.closest('.hoshi-chart-block');
-      var rangeEl = block && block.querySelector('.hoshi-chart-range');
-      if (rangeEl && json.range) {
-        rangeEl.textContent = hoshiFormatRange(json.range);
-      }
+      hoshiPrefillRangeForm(json.range);
       new Chart(canvas.getContext('2d'), {
         type: 'line',
         data: {
@@ -101,8 +120,28 @@ function hoshiRenderChart(canvas) {
       });
     });
 }
+function hoshiInitRangeForm(form) {
+  var params = new URLSearchParams(window.location.search);
+  var fromInput = form.querySelector('[name="from"]');
+  var toInput = form.querySelector('[name="to"]');
+  var from = params.get('from');
+  var to = params.get('to');
+  if (from) fromInput.value = hoshiToLocalInputValue(Number(from));
+  if (to) toInput.value = hoshiToLocalInputValue(Number(to));
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!fromInput.value || !toInput.value) return;
+    var fromTs = Math.floor(new Date(fromInput.value).getTime() / 1000);
+    var toTs = Math.floor(new Date(toInput.value).getTime() / 1000);
+    var url = new URL(form.getAttribute('action'), window.location.origin);
+    url.searchParams.set('from', String(fromTs));
+    url.searchParams.set('to', String(toTs));
+    window.location.href = url.toString();
+  });
+}
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.hoshi-chart').forEach(hoshiRenderChart);
+  document.querySelectorAll('.hoshi-range-form').forEach(hoshiInitRangeForm);
 });
 `;
 

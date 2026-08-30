@@ -164,4 +164,24 @@ describe('fetchSeries', () => {
       { ts: 120, value: 50 },
     ]);
   });
+
+  it('excludes points at or after untilTs when given', async () => {
+    const graph = await upsertGraph(
+      env.DB,
+      'svc',
+      'sec',
+      'series-until',
+      {},
+      0,
+    );
+    await recordValue(env.DB, graph.id, 0, 10, 'gauge');
+    await recordValue(env.DB, graph.id, 120, 40, 'gauge');
+    await recordValue(env.DB, graph.id, 180, 60, 'gauge');
+
+    const series = await fetchSeries(env.DB, graph.id, 120, 0, 180);
+    expect(series).toEqual([
+      { ts: 0, value: 10 },
+      { ts: 120, value: 40 },
+    ]);
+  });
 });

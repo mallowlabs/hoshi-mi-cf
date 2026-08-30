@@ -129,20 +129,24 @@ export async function fetchSeries(
   graphId: number,
   bucketSeconds: number,
   sinceTs: number,
+  untilTs?: number,
 ): Promise<DataPoint[]> {
   // D1 always binds JS numbers as SQLite REAL, so a plain `(ts / ?2) * ?2` would
   // perform floating-point division instead of the intended integer bucketing.
   // CAST forces truncation to an integer bucket index regardless of the bound type.
-  const { results } = await db
-    .prepare(
-      `SELECT CAST(ts / ?2 AS INTEGER) * CAST(?2 AS INTEGER) AS ts, AVG(value) AS value
-       FROM data_points
-       WHERE graph_id = ?1 AND ts >= ?3
-       GROUP BY CAST(ts / ?2 AS INTEGER)
-       ORDER BY ts`,
-    )
-    .bind(graphId, bucketSeconds, sinceTs)
-    .all<DataPoint>();
+  const untilClause = untilTs === undefined ? '' : 'AND ts < ?4';
+  const stmt = db.prepare(
+    `SELECT CAST(ts / ?2 AS INTEGER) * CAST(?2 AS INTEGER) AS ts, AVG(value) AS value
+     FROM data_points
+     WHERE graph_id = ?1 AND ts >= ?3 ${untilClause}
+     GROUP BY CAST(ts / ?2 AS INTEGER)
+     ORDER BY ts`,
+  );
+  const bound =
+    untilTs === undefined
+      ? stmt.bind(graphId, bucketSeconds, sinceTs)
+      : stmt.bind(graphId, bucketSeconds, sinceTs, untilTs);
+  const { results } = await bound.all<DataPoint>();
   return results;
 }
 

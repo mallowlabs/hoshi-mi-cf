@@ -3,7 +3,6 @@
 A [GrowthForecast](https://github.com/kazeburo/GrowthForecast)-like metrics service that runs entirely
 within the Cloudflare free tier. Push numbers with a plain `curl` POST, and the service renders time
 series graphs with [Chart.js](https://www.chartjs.org/). No RRDtool, no server to maintain.
-
 - Storage: Cloudflare D1 (SQLite)
 - Rendering: server-side Hono JSX, Chart.js loaded from a CDN
 - Auth: a single bearer token protects writes; reads are public
@@ -30,12 +29,12 @@ $ curl -X POST -H 'Authorization: Bearer dev-token' \
 
 Fields:
 
-| Field | Required | Description |
-|---|---|---|
-| `number` | yes | The value to record. Must be numeric. |
-| `mode` | no | `gauge` (default), `count`, or `modified`. See below. |
-| `color` | no | `#RRGGBB` line color. Updates the graph's stored color when present. |
-| `description` | no | Free text. Updates the graph's stored description when present. |
+| Field         | Required | Description                                                          |
+| ------------- | -------- | -------------------------------------------------------------------- |
+| `number`      | yes      | The value to record. Must be numeric.                                |
+| `mode`        | no       | `gauge` (default), `count`, or `modified`. See below.                |
+| `color`       | no       | `#RRGGBB` line color. Updates the graph's stored color when present. |
+| `description` | no       | Free text. Updates the graph's stored description when present.      |
 
 The graph is created automatically on its first write, keyed by the `(service, section, graph)` triple
 in the URL. A missing or incorrect bearer token returns `401`. An invalid `number`, `mode`, or `color`
@@ -138,12 +137,12 @@ Settings → Secrets and variables → Actions before running the workflow.
 
 ## Free tier notes
 
-| Resource | Free tier | Expected usage |
-|---|---|---|
-| Workers requests | 100k/day | 10 graphs posted every minute ≈ 14k/day |
-| D1 rows written | 100k/day | ≈ 14k/day with the same assumption |
-| D1 rows read | 5M/day | Fine with the `/data` cache layer; an uncached `t=y` query can scan up to ~525,600 rows |
-| D1 storage | 5 GB | 1-minute resolution ≈ 525k rows/graph/year ≈ tens of MB/year |
+| Resource         | Free tier | Expected usage                                                                          |
+| ---------------- | --------- | --------------------------------------------------------------------------------------- |
+| Workers requests | 100k/day  | 10 graphs posted every minute ≈ 14k/day                                                 |
+| D1 rows written  | 100k/day  | ≈ 14k/day with the same assumption                                                      |
+| D1 rows read     | 5M/day    | Fine with the `/data` cache layer; an uncached `t=y` query can scan up to ~525,600 rows |
+| D1 storage       | 5 GB      | 1-minute resolution ≈ 525k rows/graph/year ≈ tens of MB/year                            |
 
 Because data is never deleted or rolled up, `/data` responses are cached at the edge (Cloudflare's
 Cache API) with a `Cache-Control` max-age that scales with the time range — from 60 seconds for `t=h`

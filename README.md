@@ -3,6 +3,7 @@
 A [GrowthForecast](https://github.com/kazeburo/GrowthForecast)-like metrics service that runs entirely
 within the Cloudflare free tier. Push numbers with a plain `curl` POST, and the service renders time
 series graphs with [Chart.js](https://www.chartjs.org/). No RRDtool, no server to maintain.
+
 - Storage: Cloudflare D1 (SQLite)
 - Rendering: server-side Hono JSX, Chart.js loaded from a CDN
 - Auth: a single bearer token protects writes; reads are public
